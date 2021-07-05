@@ -13,13 +13,13 @@
 	};
 
 	aliases {
-		led-boot = &power_green;
-		led-failsafe = &power_red;
-		led-running = &power_green;
-		led-upgrade = &power_red;
+		led-boot = &led_power_green;
+		led-failsafe = &led_power_red;
+		led-running = &led_power_green;
+		led-upgrade = &led_power_red;
 
-		led-dsl = &info_green;
-		led-wifi = &wifi;
+		led-dsl = &led_info_green;
+		led-wifi = &led_wifi;
 	};
 
 	memory@0 {
@@ -40,106 +40,49 @@
 		wifi {
 			label = "wifi";
 			gpios = <&gpio 29 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_WLAN>;
+			linux,code = <KEY_RFKILL>;
 		};
 	};
 
 	leds: leds {
 		compatible = "gpio-leds";
 
-		power_green: power {
+		led_power_green: power_green {
+			label = "green:power";
 			gpios = <&gpio 32 GPIO_ACTIVE_LOW>;
 			default-state = "keep";
 		};
 
-		power_red: power2 {
+		led_power_red: power_red {
+			label = "red:power";
 			gpios = <&gpio 33 GPIO_ACTIVE_LOW>;
 		};
 
-		info_green: info_green {
+		led_info_green: info_green {
+			label = "green:info";
 			gpios = <&gpio 47 GPIO_ACTIVE_LOW>;
 		};
 
-		wifi: wifi {
+		led_wifi: wifi {
+			label = "green:wlan";
 			gpios = <&gpio 36 GPIO_ACTIVE_LOW>;
 		};
 
-		info_red: info_red {
+		info_red {
+			label = "red:info";
 			gpios = <&gpio 34 GPIO_ACTIVE_LOW>;
 		};
 
-		dect: dect {
+		dect {
+			label = "green:dect";
 			gpios = <&gpio 35 GPIO_ACTIVE_LOW>;
 		};
 	};
 };
 
 &eth0 {
-	lan: interface@0 {
-		compatible = "lantiq,xrx200-pdi";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		reg = <0>;
-		mtd-mac-address = <&urlader 0xa91>;
-		mtd-mac-address-increment = <(-2)>;
-		lantiq,switch;
-
-		ethernet@0 {
-			compatible = "lantiq,xrx200-pdi-port";
-			reg = <0>;
-			phy-mode = "rmii";
-			phy-handle = <&phy0>;
-		};
-
-		ethernet@1 {
-			compatible = "lantiq,xrx200-pdi-port";
-			reg = <1>;
-			phy-mode = "rmii";
-			phy-handle = <&phy1>;
-		};
-
-		ethernet@2 {
-			compatible = "lantiq,xrx200-pdi-port";
-			reg = <2>;
-			phy-mode = "gmii";
-			phy-handle = <&phy11>;
-		};
-
-		ethernet@3 {
-			compatible = "lantiq,xrx200-pdi-port";
-			reg = <4>;
-			phy-mode = "gmii";
-			phy-handle = <&phy13>;
-		};
-	};
-
-	mdio {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		compatible = "lantiq,xrx200-mdio";
-
-		phy0: ethernet-phy@0 {
-			reg = <0x00>;
-			compatible = "ethernet-phy-ieee802.3-c22";
-			reset-gpios = <&gpio 37 GPIO_ACTIVE_LOW>;
-		};
-
-		phy1: ethernet-phy@1 {
-			reg = <0x01>;
-			compatible = "ethernet-phy-ieee802.3-c22";
-			reset-gpios = <&gpio 44 GPIO_ACTIVE_LOW>;
-		};
-
-		phy11: ethernet-phy@11 {
-			reg = <0x11>;
-			compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-		};
-
-		phy13: ethernet-phy@13 {
-			reg = <0x13>;
-			compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-		};
-	};
+	mtd-mac-address = <&urlader 0xa91>;
+	mtd-mac-address-increment = <(-2)>;
 };
 
 &gphy0 {
@@ -163,6 +106,61 @@
 		};
 	};
 
+};
+
+&gswip {
+	pinctrl-0 = <&mdio_pins>;
+	pinctrl-names = "default";
+};
+
+&gswip_mdio {
+	phy0: ethernet-phy@0 {
+		reg = <0x00>;
+		reset-gpios = <&gpio 37 GPIO_ACTIVE_LOW>;
+	};
+
+	phy1: ethernet-phy@1 {
+		reg = <0x01>;
+		reset-gpios = <&gpio 44 GPIO_ACTIVE_LOW>;
+	};
+
+	phy11: ethernet-phy@11 {
+		reg = <0x11>;
+	};
+
+	phy13: ethernet-phy@13 {
+		reg = <0x13>;
+	};
+};
+
+&gswip_ports {
+	port@0 {
+		reg = <0>;
+		label = "lan3";
+		phy-mode = "rmii";
+		phy-handle = <&phy0>;
+	};
+
+	port@1 {
+		reg = <1>;
+		label = "lan4";
+		phy-mode = "rmii";
+		phy-handle = <&phy1>;
+	};
+
+	port@2 {
+		reg = <2>;
+		label = "lan2";
+		phy-mode = "internal";
+		phy-handle = <&phy11>;
+	};
+
+	port@4 {
+		reg = <4>;
+		label = "lan1";
+		phy-mode = "internal";
+		phy-handle = <&phy13>;
+	};
 };
 
 &pcie0 {
